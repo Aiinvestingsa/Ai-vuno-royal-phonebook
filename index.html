@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUNO ROYAL 👑 Smart Phonebook - R20/mo</title>
+<script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"></script>
+<style>
+*{box-sizing:border-box;font-family:system-ui,Arial}
+body{background:#0a0a0a;color:#fff;margin:0;padding:0 14px 80px}
+header{background:#111;padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.logo{font-size:19px;font-weight:900;color:#FFD700}
+.card{background:#181818;border-radius:16px;padding:16px;margin:12px 0;border:1px solid #2a2a2a}
+input,textarea,select{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
+label{font-size:12px;color:#aaa}
+.btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:8px}
+.btn2{background:#25D366;color:#000;border:0;padding:12px;border-radius:12px;font-weight:700;width:100%;cursor:pointer;margin-top:8px}
+.btnGhost{background:#222;color:#fff;border:1px solid #444;padding:10px;border-radius:10px;width:100%;cursor:pointer;margin-top:6px}
+.btnSmall{background:#222;color:#fff;border:1px solid #444;padding:7px 10px;border-radius:20px;cursor:pointer;font-size:13px}
+.pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px;margin:2px}
+.contact{background:#111;border-radius:14px;padding:14px;margin:10px 0;border-left:4px solid #FFD700}
+.contact h3{margin:0 0 4px}
+.small{font-size:13px;color:#aaa}
+.searchBox{background:#222;border:2px solid #FFD700;border-radius:14px;padding:14px;font-size:16px}
+.priceBox{background:linear-gradient(135deg,#FFD700,#FF8A00);color:#000;border-radius:14px;padding:16px;text-align:center;font-weight:800}
+.lockBox{background:#3a1a1a;border:2px solid #ff5555;border-radius:14px;padding:18px;text-align:center}
+.tabs{display:flex;gap:8px;margin:10px 0}
+.tabs button{flex:1;background:#222;color:#fff;border:0;padding:12px;border-radius:12px;cursor:pointer}
+.tabs button.sel{background:#FFD700;color:#000;font-weight:800}
+.avatar{width:52px;height:52px;border-radius:50%;background:#FFD700;color:#000;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;float:left;margin-right:12px;object-fit:cover}
+.noteBox{background:#1a1a00;border:1px solid #333;border-radius:10px;padding:10px;margin-top:8px;font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="logo">VUNO ROYAL 👑<br><span style="font-size:11px;color:#aaa">SMART PHONEBOOK</span></div><div id="countBadge">0 Contacts</div></header>
+
+<!-- R20 PRICING BANNER -->
+<div class="card" id="pricingCard">
+<div class="priceBox">📒 VUNO ROYAL PHONEBOOK<br>Only R20 / Month<br><span style="font-weight:400;font-size:13px">Unlimited Contacts • Notes • Addresses • Reminders • Backup</span></div>
+<p class="small" style="text-align:center" id="planStatus">🎁 FREE Trial: 7 days • 50 contacts free</p>
+<button class="btn" id="payBtn" onclick="payR20()">💳 PAY R20 / MONTH — UNLOCK UNLIMITED</button>
+<button class="btnGhost" onclick="payYearly()">⭐ PAY R200 / YEAR — Save R40 (2 Months FREE)</button>
+<p class="small" style="text-align:center">Pay with Card • Capitec • Yoco • Cancel anytime</p>
+</div>
+
+<!-- LOCKED MESSAGE - Shows when trial over -->
+<div class="card lockBox" id="lockBox" style="display:none">
+<h2 style="margin:0">🔒 Trial Finished</h2>
+<p>You have used your FREE 7 days / 50 contacts.</p>
+<p><b>Pay R20 to unlock ALL contacts + keep adding.</b><br>That's less than R1 per day!</p>
+<button class="btn" onclick="payR20()">💳 PAY R20 NOW — UNLOCK</button>
+<p class="small">Your contacts are SAFE, not deleted. Pay to see them again.</p>
+</div>
+
+<div class="card">
+<h2 style="margin:0">🔍 AI Smart Search</h2>
+<p class="small">Search like you talk: "Durban car guy" • "Owes me money" • "Birthday this week"</p>
+<input id="searchInput" class="searchBox" placeholder="🔍 Ask: Who owes me? Who is in Durban?" oninput="render()">
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+<button class="btnSmall" onclick="quickSearch('Durban')">📍 Durban</button>
+<button class="btnSmall" onclick="quickSearch('owes')">💰 Owes Me</button>
+<button class="btnSmall" onclick="quickSearch('birthday')">🎂 Birthday</button>
+<button class="btnSmall" onclick="quickSearch('')">Show All</button>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin:0">➕ Add New Contact</h3>
+<label>Full Name *</label><input id="fName" placeholder="e.g. Thandi Dube">
+<label>Phone / WhatsApp *</label><input id="fPhone" placeholder="e.g. 082 123 4567" type="tel">
+<label>Category</label><select id="fCat"><option>Friend</option><option>Family</option><option>Client</option><option>Business</option><option>Church</option><option>School</option><option>Other</option></select>
+<label>Home / Work Address</label><input id="fAddr" placeholder="e.g. 12 Smith Street, Umlazi, Durban">
+<label>Notes — AI will remember</label><textarea id="fNotes" rows="2" placeholder="e.g. Owes me R200, pay Friday. Birthday 12 March. Sells cars in Durban."></textarea>
+<label>Reminder Date</label><input id="fRemind" type="date">
+<button class="btn" onclick="addContact()">💾 SAVE CONTACT — AI Smart Save</button>
+<p class="small" id="aiHint"></p>
+</div>
+
+<div class="card">
+<h3 style="margin:0">📤 Backup</h3>
+<button class="btn2" onclick="exportContacts()">📥 DOWNLOAD BACKUP</button>
+<button class="btnGhost" onclick="importContacts()">📤 RESTORE BACKUP</button>
+<input type="file" id="importFile" style="display:none" accept=".json" onchange="doImport(event)">
+</div>
+
+<div id="list"></div>
+<div id="emptyMsg" class="card" style="text-align:center"><p>👋 No contacts yet.<br>Add your first contact above.</p><button class="btnGhost" onclick="loadDemo()">✨ Load Demo Contacts</button></div>
+
+<script>
+let contacts = JSON.parse(localStorage.getItem('vuno_phonebook') || '[]');
+let sub = JSON.parse(localStorage.getItem('vuno_sub') || 'null');
+// Trial: first time user opens app, start 7-day trial
+if(!localStorage.getItem('vuno_trial_start')){
+  localStorage.setItem('vuno_trial_start', Date.now().toString());
+}
+function isSubscribed(){
+  if(!sub) return false;
+  return Date.now() < sub.expiresAt;
+}
+function isTrialActive(){
+  let start = parseInt(localStorage.getItem('vuno_trial_start')||'0');
+  let days = (Date.now() - start) / (1000*60*60*24);
+  return days < 7 && contacts.length < 50;
+}
+function isLocked(){
+  return !isSubscribed() && !isTrialActive();
+}
+function updatePlanUI(){
+  let statusEl = document.getElementById('planStatus');
+  let lockEl = document.getElementById('lockBox');
+  let payBtn = document.getElementById('payBtn');
+  if(isSubscribed()){
+    let daysLeft = Math.ceil((sub.expiresAt - Date.now())/(1000*60*60*24));
+    statusEl.textContent = `✅ PRO ACTIVE — ${daysLeft} days left • Unlimited contacts`;
+    statusEl.style.color = '#7dff7d';
+    payBtn.textContent = '✅ YOU ARE PRO — R20/month Active';
+    lockEl.style.display = 'none';
+  } else if(isTrialActive()){
+    let start = parseInt(localStorage.getItem('vuno_trial_start')||'0');
+    let daysLeft = Math.ceil(7 - (Date.now()-start)/(1000*60*60*24));
+    statusEl.textContent = `🎁 FREE Trial: ${daysLeft} days left • ${contacts.length}/50 contacts used`;
+    lockEl.style.display = 'none';
+  } else {
+    statusEl.textContent = '🔒 Trial finished — Pay R20 to unlock';
+    lockEl.style.display = 'block';
+  }
+}
+function aiDetect(text){
+  text=(text||'').toLowerCase();
+  if(text.includes('owe')||text.includes('client')||text.includes('pay')||text.includes('sells')||text.includes('shop')) return 'Client';
+  if(text.includes('mom')||text.includes('dad')||text.includes('sister')||text.includes('brother')||text.includes('family')) return 'Family';
+  if(text.includes('church')||text.includes('pastor')) return 'Church';
+  if(text.includes('teacher')||text.includes('school')) return 'School';
+  if(text.includes('work')||text.includes('boss')) return 'Business';
+  return null;
+}
+function addContact(){
+  if(isLocked()){ alert('🔒 Trial finished! Pay R20 to add more contacts. Your old contacts are safe.'); document.getElementById('lockBox').scrollIntoView(); return; }
+  let name=document.getElementById('fName').value.trim();
+  let phone=document.getElementById('fPhone').value.trim();
+  if(!name||!phone){ alert('Name + Phone needed!'); return; }
+  let notes=document.getElementById('fNotes').value.trim();
+  let addr=document.getElementById('fAddr').value.trim();
+  let cat=document.getElementById('fCat').value;
+  let aiCat=aiDetect(notes+' '+addr+' '+name);
+  if(aiCat && aiCat!==cat){ cat=aiCat; document.getElementById('aiHint').textContent=`🤖 AI detected: This is a ${aiCat} — auto-corrected!`; }
+  else document.getElementById('aiHint').textContent=`🤖 AI saved as ${cat} ✅`;
+  let c={id:Date.now(),name,phone,phone2:'',cat,addr,notes,remind:document.getElementById('fRemind').value,created:new Date().toLocaleDateString()};
+  contacts.unshift(c); save(); clearForm(); render(); updatePlanUI();
+  alert(`✅ Saved ${name} as ${cat}!`);
+}
+function clearForm(){ ['fName','fPhone','fAddr','fNotes','fRemind'].forEach(id=>document.getElementById(id).value=''); }
+function save(){ localStorage.setItem('vuno_phonebook', JSON.stringify(contacts)); }
+function quickSearch(q){ document.getElementById('searchInput').value=q; render(); }
+function render(){
+  let q=(document.getElementById('searchInput').value||'').toLowerCase();
+  let filtered=contacts.filter(c=>{
+    let hay=(c.name+' '+c.phone+' '+c.cat+' '+c.addr+' '+c.notes).toLowerCase();
+    if(q.includes('owe')) return hay.includes('owe');
+    if(q.includes('birthday')) return hay.includes('birthday');
+    if(!q) return true;
+    return hay.includes(q);
+  });
+  // If locked, show only first 3 as teaser
+  let showList = isLocked() ? filtered.slice(0,3) : filtered;
+  document.getElementById('countBadge').textContent=contacts.length+' Contacts';
+  document.getElementById('emptyMsg').style.display=contacts.length===0?'block':'none';
+  let html='';
+  if(isLocked() && contacts.length>3) html+=`<div class="card lockBox">🔒 You have ${contacts.length} contacts but trial is over.<br>Pay R20 to see all.<br><button class="btn" onclick="payR20()">UNLOCK FOR R20</button></div>`;
+  showList.forEach(c=>{
+    let initial=c.name.charAt(0).toUpperCase();
+    html+=`<div class="contact"><div class="avatar">${initial}</div><h3>${c.name}</h3><span class="pill">${c.cat}</span> <span class="small">${c.created}</span><div style="clear:both"></div><p>📞 <a href="tel:${c.phone}" style="color:#fff;font-weight:700">${c.phone}</a></p>${c.addr?`<div class="small">📍 ${c.addr} <a href="https://www.google.com/maps/search/${encodeURIComponent(c.addr)}" target="_blank" style="color:#FFD700">Maps →</a></div>`:''}${c.notes?`<div class="noteBox">📝 ${c.notes}</div>`:''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btnSmall" onclick="window.location.href='tel:${c.phone}'">📞 Call</button><button class="btnSmall" onclick="whatsAppContact('${c.phone}','${c.name}')">💬 WhatsApp</button><button class="btnSmall" onclick="deleteContact(${c.id})" style="color:#ff7777">🗑️ Delete</button></div></div>`;
+  });
+  document.getElementById('list').innerHTML=html;
+}
+function whatsAppContact(p,name){ let clean=p.replace(/\D/g,''); if(clean.startsWith('0')) clean='27'+clean.slice(1); window.open(`https://wa.me/${clean}?text=${encodeURIComponent('Hi '+name+' 👋')}`,'_blank'); }
+function deleteContact(id){ if(!confirm('Delete?')) return; contacts=contacts.filter(x=>x.id!==id); save(); render(); updatePlanUI(); }
+function exportContacts(){ let blob=new Blob([JSON.stringify(contacts,null,2)],{type:'application/json'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='VUNO-ROYAL-Phonebook.json'; a.click(); }
+function importContacts(){ document.getElementById('importFile').click(); }
+function doImport(e){ let f=e.target.files[0]; if(!f) return; let r=new FileReader(); r.onload=ev=>{ try{ contacts=JSON.parse(ev.target.result); save(); render(); updatePlanUI(); alert('✅ Restored '+contacts.length+' contacts!'); }catch(err){ alert('Invalid file'); } }; r.readAsText(f); }
+function loadDemo(){ contacts=[{id:1,name:'Thandi Dube',phone:'082 123 4567',cat:'Client',addr:'12 Smith St, Umlazi, Durban',notes:'Owes me R200, pay Friday. Birthday 12 March.',remind:'',created:'Today'},{id:2,name:'Siya Khumalo',phone:'083 987 6543',cat:'Business',addr:'Umlazi Mega City',notes:'Car guy in Durban.',remind:'',created:'Today'}]; save(); render(); updatePlanUI(); }
+
+// ===== R20 PAYMENT - Yoco =====
+function payR20(){
+  let yoco=new YocoSDK({ publicKey: 'pk_test_your_yoco_public_key' }); // Change to your real Yoco key
+  yoco.showPopup({
+    amountInCents: 2000, // R20 = 2000 cents
+    currency: 'ZAR',
+    name: 'VUNO ROYAL Phonebook - 1 Month',
+    description: 'Unlimited contacts for 30 days',
+    callback: function(result){
+      if(result.error){ alert('Payment failed: '+result.error.message); return; }
+      // Success - Unlock for 30 days
+      sub = { plan: 'monthly', expiresAt: Date.now() + 30*24*60*60*1000, paymentId: result.id };
+      localStorage.setItem('vuno_sub', JSON.stringify(sub));
+      updatePlanUI(); render();
+      alert('✅ PAID! Welcome to PRO! Unlimited contacts for 30 days. Thank you!');
+    }
+  });
+}
+function payYearly(){
+  let yoco=new YocoSDK({ publicKey: 'pk_test_your_yoco_public_key' });
+  yoco.showPopup({
+    amountInCents: 20000, // R200 = 20000 cents
+    currency: 'ZAR',
+    name: 'VUNO ROYAL Phonebook - 1 Year',
+    description: 'Unlimited contacts for 365 days - Save R40',
+    callback: function(result){
+      if(result.error){ alert('Payment failed'); return; }
+      sub = { plan: 'yearly', expiresAt: Date.now() + 365*24*60*60*1000, paymentId: result.id };
+      localStorage.setItem('vuno_sub', JSON.stringify(sub));
+      updatePlanUI(); render();
+      alert('✅ PAID! Welcome to PRO YEARLY! 365 days unlimited. You saved R40!');
+    }
+  });
+}
+updatePlanUI(); render();
+</script>
+</body>
+</html>
